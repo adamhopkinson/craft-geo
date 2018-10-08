@@ -65,8 +65,10 @@ class Geo_LocationService extends BaseApplicationComponent
 
     private function getNekudoData($ip){
 
-        $url = "/api/".$ip."/full";
-        $nekudoClient = new \Guzzle\Http\Client("http://geoip.nekudo.com");
+    	$key = craft()->config->get('ipApiKey', 'geo');
+        
+	    $url = $ip."?access_key=".$key;
+	    $nekudoClient = new \Guzzle\Http\Client("http://api.ipapi.com/");
         $response = $nekudoClient->get($url, array(), array("exceptions" => false))->send();
 
         if (!$response->isSuccessful()) {
@@ -78,27 +80,15 @@ class Geo_LocationService extends BaseApplicationComponent
             return array();
         }
 
-        if(isset($data->subdivisions[0])){
-            $regionName = $data->subdivisions[0]->names->en;
-        }else{
-            $regionName = "";
-        }
-
-        if(isset($data->city)){
-            $city = $data->city->names->en;
-        }else{
-            $city = "";
-        }
-
         $data = array(
-            "ip"=>$data->traits->ip_address,
-            "country_code"=>$data->country->iso_code,
-            "country_name"=>$data->country->names->en,
-            "region_name"=>$regionName,
+            "ip"=>$data->ip,
+            "country_code"=>$data->country_code,
+            "country_name"=>$data->country_name,
+            "region_name"=>$data->region_name,
             // Yes i know, i am not getting postcode etc yet.
-            "city"=>$city,
-            "latitude"=>$data->location->latitude,
-            "longitude"=>$data->location->longitude,
+            "city"=>$data->city,
+            "latitude"=>$data->latitude,
+            "longitude"=>$data->longitude,
             "cached"=>false
         );
 
